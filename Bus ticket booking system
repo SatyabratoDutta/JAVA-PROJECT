@@ -1,0 +1,288 @@
+import java.util.*;
+
+class Bus {
+    int busNo;
+    String source;
+    String destination;
+    int totalSeats;
+    int availableSeats;
+    double fare;
+
+    Bus(int busNo, String source, String destination,
+        int totalSeats, double fare) {
+
+        this.busNo = busNo;
+        this.source = source;
+        this.destination = destination;
+        this.totalSeats = totalSeats;
+        this.availableSeats = totalSeats;
+        this.fare = fare;
+    }
+
+    void displayBus() {
+        System.out.println(
+            busNo + "\t" +
+            source + "\t\t" +
+            destination + "\t\t" +
+            availableSeats + "\t\t" +
+            fare
+        );
+    }
+}
+
+class Booking {
+    int bookingId;
+    String passengerName;
+    int busNo;
+    int seats;
+    double amount;
+
+    Booking(int bookingId, String passengerName,
+            int busNo, int seats, double amount) {
+
+        this.bookingId = bookingId;
+        this.passengerName = passengerName;
+        this.busNo = busNo;
+        this.seats = seats;
+        this.amount = amount;
+    }
+
+    void displayBooking() {
+        System.out.println("\nBooking ID     : " + bookingId);
+        System.out.println("Passenger Name : " + passengerName);
+        System.out.println("Bus Number     : " + busNo);
+        System.out.println("Seats          : " + seats);
+        System.out.println("Total Amount   : ₹" + amount);
+    }
+}
+
+public class BusTicketBookingSystem {
+
+    static Scanner sc = new Scanner(System.in);
+
+    static ArrayList<Bus> buses = new ArrayList<>();
+    static ArrayList<Booking> bookings = new ArrayList<>();
+
+    static int bookingCounter = 1001;
+
+    public static void main(String[] args) {
+
+        addBuses();
+
+        while (true) {
+
+            System.out.println("\n================================");
+            System.out.println("     BUS TICKET BOOKING SYSTEM");
+            System.out.println("================================");
+
+            System.out.println("1. View Buses");
+            System.out.println("2. Search Bus");
+            System.out.println("3. Book Ticket");
+            System.out.println("4. Cancel Ticket");
+            System.out.println("5. View Booking");
+            System.out.println("6. Exit");
+
+            System.out.print("Enter your choice: ");
+            int choice = sc.nextInt();
+
+            switch (choice) {
+
+                case 1:
+                    viewBuses();
+                    break;
+
+                case 2:
+                    searchBus();
+                    break;
+
+                case 3:
+                    bookTicket();
+                    break;
+
+                case 4:
+                    cancelTicket();
+                    break;
+
+                case 5:
+                    viewBooking();
+                    break;
+
+                case 6:
+                    System.out.println("Thank you!");
+                    System.exit(0);
+
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    static void addBuses() {
+
+        buses.add(new Bus(
+            101, "Kolkata", "Durgapur", 40, 350
+        ));
+
+        buses.add(new Bus(
+            102, "Kolkata", "Asansol", 45, 400
+        ));
+
+        buses.add(new Bus(
+            103, "Durgapur", "Siliguri", 50, 650
+        ));
+
+        buses.add(new Bus(
+            104, "Kolkata", "Siliguri", 40, 800
+        ));
+    }
+
+    static void viewBuses() {
+
+        System.out.println("\nBus No\tSource\t\tDestination\tSeats\t\tFare");
+
+        for (Bus bus : buses) {
+            bus.displayBus();
+        }
+    }
+
+    static void searchBus() {
+
+        sc.nextLine();
+
+        System.out.print("Enter source: ");
+        String source = sc.nextLine();
+
+        System.out.print("Enter destination: ");
+        String destination = sc.nextLine();
+
+        boolean found = false;
+
+        for (Bus bus : buses) {
+
+            if (bus.source.equalsIgnoreCase(source)
+                    && bus.destination.equalsIgnoreCase(destination)) {
+
+                System.out.println("\nBus Found:");
+                bus.displayBus();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("No bus found!");
+        }
+    }
+
+    static void bookTicket() {
+
+        viewBuses();
+
+        System.out.print("\nEnter Bus Number: ");
+        int busNo = sc.nextInt();
+
+        Bus selectedBus = null;
+
+        for (Bus bus : buses) {
+
+            if (bus.busNo == busNo) {
+                selectedBus = bus;
+                break;
+            }
+        }
+
+        if (selectedBus == null) {
+            System.out.println("Bus not found!");
+            return;
+        }
+
+        System.out.print("Enter passenger name: ");
+        sc.nextLine();
+        String name = sc.nextLine();
+
+        System.out.print("Enter number of seats: ");
+        int seats = sc.nextInt();
+
+        if (seats <= 0) {
+            System.out.println("Invalid number of seats!");
+            return;
+        }
+
+        if (seats > selectedBus.availableSeats) {
+            System.out.println("Not enough seats available!");
+            return;
+        }
+
+        double amount = seats * selectedBus.fare;
+
+        selectedBus.availableSeats -= seats;
+
+        Booking booking = new Booking(
+            bookingCounter,
+            name,
+            busNo,
+            seats,
+            amount
+        );
+
+        bookings.add(booking);
+
+        System.out.println("\nTicket booked successfully!");
+        booking.displayBooking();
+
+        bookingCounter++;
+    }
+
+    static void cancelTicket() {
+
+        System.out.print("Enter Booking ID: ");
+        int id = sc.nextInt();
+
+        Booking selectedBooking = null;
+
+        for (Booking booking : bookings) {
+
+            if (booking.bookingId == id) {
+                selectedBooking = booking;
+                break;
+            }
+        }
+
+        if (selectedBooking == null) {
+            System.out.println("Booking not found!");
+            return;
+        }
+
+        for (Bus bus : buses) {
+
+            if (bus.busNo == selectedBooking.busNo) {
+                bus.availableSeats += selectedBooking.seats;
+                break;
+            }
+        }
+
+        bookings.remove(selectedBooking);
+
+        System.out.println("Ticket cancelled successfully!");
+    }
+
+    static void viewBooking() {
+
+        System.out.print("Enter Booking ID: ");
+        int id = sc.nextInt();
+
+        boolean found = false;
+
+        for (Booking booking : bookings) {
+
+            if (booking.bookingId == id) {
+                booking.displayBooking();
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            System.out.println("Booking not found!");
+        }
+    }
+}
