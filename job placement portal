@@ -1,0 +1,78 @@
+import java.util.*;
+
+public class Main {
+    static class Job {
+        String title;
+        String company;
+        double salary;
+
+        Job(String title, String company, double salary) {
+            this.title = title;
+            this.company = company;
+            this.salary = salary;
+        }
+
+        public String toString() {
+            return title + " | " + company
+                    + " | Salary: ₹" + salary;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ArrayList<Job> jobs = new ArrayList<>();
+
+        while (true) {
+            System.out.println("\n1. Add Job");
+            System.out.println("2. View Jobs");
+            System.out.println("3. Search Jobs");
+            System.out.println("4. Exit");
+
+            int choice = sc.nextInt();
+            sc.nextLine();
+
+            if (choice == 1) {
+                System.out.print("Job title: ");
+                String title = sc.nextLine();
+
+                System.out.print("Company: ");
+                String company = sc.nextLine();
+
+                System.out.print("Annual salary in ₹: ");
+                double salary = sc.nextDouble();
+
+                if (salary < 0) {
+                    System.out.println("Invalid salary.");
+                    continue;
+                }
+
+                jobs.add(new Job(title, company, salary));
+                System.out.println("Job added.");
+
+            } else if (choice == 2) {
+                for (Job j : jobs)
+                    System.out.println(j);
+
+            } else if (choice == 3) {
+                System.out.print("Enter job title: ");
+                String search = sc.nextLine();
+                boolean found = false;
+
+                for (Job j : jobs) {
+                    if (j.title.toLowerCase()
+                            .contains(search.toLowerCase())) {
+                        System.out.println(j);
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                    System.out.println("No matching jobs found.");
+
+            } else if (choice == 4) {
+                sc.close();
+                return;
+            }
+        }
+    }
+}
