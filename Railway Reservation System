@@ -1,0 +1,303 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main {
+
+    static class Ticket {
+        int ticketId;
+        String passengerName;
+        String source;
+        String destination;
+        int age;
+        int seatNumber;
+        double fare;
+
+        Ticket(int ticketId, String passengerName, String source,
+               String destination, int age, int seatNumber, double fare) {
+            this.ticketId = ticketId;
+            this.passengerName = passengerName;
+            this.source = source;
+            this.destination = destination;
+            this.age = age;
+            this.seatNumber = seatNumber;
+            this.fare = fare;
+        }
+
+        void display() {
+            System.out.println("------------------------------------");
+            System.out.println("Ticket ID     : " + ticketId);
+            System.out.println("Passenger Name: " + passengerName);
+            System.out.println("Age           : " + age);
+            System.out.println("Source        : " + source);
+            System.out.println("Destination   : " + destination);
+            System.out.println("Seat Number   : " + seatNumber);
+            System.out.printf("Fare          : Rs. %.2f%n", fare);
+            System.out.println("------------------------------------");
+        }
+    }
+
+    static ArrayList<Ticket> tickets = new ArrayList<>();
+    static Scanner sc = new Scanner(System.in);
+
+    static final int TOTAL_SEATS = 10;
+    static int nextTicketId = 1001;
+
+    static boolean isValidSeat(int seatNumber) {
+        return seatNumber >= 1 && seatNumber <= TOTAL_SEATS;
+    }
+
+    static boolean isSeatBooked(int seatNumber) {
+        for (Ticket ticket : tickets) {
+            if (ticket.seatNumber == seatNumber) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static int readInt(String message) {
+        while (true) {
+            System.out.print(message);
+
+            if (sc.hasNextInt()) {
+                int value = sc.nextInt();
+                sc.nextLine();
+                return value;
+            }
+
+            System.out.println("Invalid input. Please enter a number.");
+            sc.nextLine();
+        }
+    }
+
+    static double calculateFare(int age) {
+        double fare = 500.0;
+
+        if (age < 5) {
+            return 0.0;
+        } else if (age <= 12) {
+            return fare * 0.5;
+        } else if (age >= 60) {
+            return fare * 0.8;
+        }
+
+        return fare;
+    }
+
+    static void displayAvailableSeats() {
+        System.out.println("\n========== SEAT AVAILABILITY ==========");
+
+        for (int seat = 1; seat <= TOTAL_SEATS; seat++) {
+            System.out.println(
+                "Seat " + seat + ": " +
+                (isSeatBooked(seat) ? "BOOKED" : "AVAILABLE")
+            );
+        }
+    }
+
+    static void bookTicket() {
+        if (tickets.size() == TOTAL_SEATS) {
+            System.out.println("Sorry! All seats are booked.");
+            return;
+        }
+
+        System.out.println("\n========== BOOK RAILWAY TICKET ==========");
+
+        System.out.print("Enter passenger name: ");
+        String name = sc.nextLine().trim();
+
+        if (name.isEmpty()) {
+            System.out.println("Passenger name cannot be empty.");
+            return;
+        }
+
+        int age = readInt("Enter passenger age: ");
+
+        if (age < 0 || age > 120) {
+            System.out.println("Invalid age.");
+            return;
+        }
+
+        System.out.print("Enter source station: ");
+        String source = sc.nextLine().trim();
+
+        System.out.print("Enter destination station: ");
+        String destination = sc.nextLine().trim();
+
+        if (source.isEmpty() || destination.isEmpty()) {
+            System.out.println("Station names cannot be empty.");
+            return;
+        }
+
+        if (source.equalsIgnoreCase(destination)) {
+            System.out.println("Source and destination cannot be the same.");
+            return;
+        }
+
+        displayAvailableSeats();
+
+        int seatNumber = readInt("Choose a seat (1-10): ");
+
+        if (!isValidSeat(seatNumber)) {
+            System.out.println("Invalid seat number.");
+            return;
+        }
+
+        if (isSeatBooked(seatNumber)) {
+            System.out.println("This seat is already booked.");
+            return;
+        }
+
+        double fare = calculateFare(age);
+
+        Ticket ticket = new Ticket(
+            nextTicketId,
+            name,
+            source,
+            destination,
+            age,
+            seatNumber,
+            fare
+        );
+
+        tickets.add(ticket);
+
+        System.out.println("\nTicket booked successfully!");
+        ticket.display();
+
+        nextTicketId++;
+    }
+
+    static void viewAllTickets() {
+        System.out.println("\n========== ALL RESERVATIONS ==========");
+
+        if (tickets.isEmpty()) {
+            System.out.println("No reservations found.");
+            return;
+        }
+
+        for (Ticket ticket : tickets) {
+            ticket.display();
+        }
+    }
+
+    static void searchTicket() {
+        System.out.println("\n========== SEARCH TICKET ==========");
+
+        int id = readInt("Enter ticket ID: ");
+
+        for (Ticket ticket : tickets) {
+            if (ticket.ticketId == id) {
+                System.out.println("Ticket found!");
+                ticket.display();
+                return;
+            }
+        }
+
+        System.out.println("Ticket not found.");
+    }
+
+    static void cancelTicket() {
+        System.out.println("\n========== CANCEL TICKET ==========");
+
+        int id = readInt("Enter ticket ID to cancel: ");
+
+        for (int i = 0; i < tickets.size(); i++) {
+            Ticket ticket = tickets.get(i);
+
+            if (ticket.ticketId == id) {
+                System.out.println("Reservation found:");
+                ticket.display();
+
+                System.out.print("Confirm cancellation? (yes/no): ");
+                String confirmation = sc.nextLine().trim();
+
+                if (confirmation.equalsIgnoreCase("yes")) {
+                    tickets.remove(i);
+                    System.out.println("Ticket cancelled successfully.");
+                    System.out.println("Seat " + ticket.seatNumber
+                            + " is now available.");
+                } else {
+                    System.out.println("Cancellation aborted.");
+                }
+
+                return;
+            }
+        }
+
+        System.out.println("Ticket ID not found.");
+    }
+
+    static void showTotalRevenue() {
+        double totalRevenue = 0;
+
+        for (Ticket ticket : tickets) {
+            totalRevenue += ticket.fare;
+        }
+
+        System.out.println("\n========== REVENUE REPORT ==========");
+        System.out.println("Total tickets booked: " + tickets.size());
+        System.out.printf("Total current fare value: Rs. %.2f%n",
+                totalRevenue);
+        System.out.println("Available seats: "
+                + (TOTAL_SEATS - tickets.size()));
+    }
+
+    public static void main(String[] args) {
+
+        while (true) {
+            System.out.println("\n");
+            System.out.println("========================================");
+            System.out.println("     RAILWAY RESERVATION SYSTEM");
+            System.out.println("========================================");
+            System.out.println("1. Book Ticket");
+            System.out.println("2. View All Reservations");
+            System.out.println("3. Search Ticket");
+            System.out.println("4. Cancel Ticket");
+            System.out.println("5. Check Available Seats");
+            System.out.println("6. Revenue Report");
+            System.out.println("7. Exit");
+            System.out.println("========================================");
+
+            int choice = readInt("Enter your choice: ");
+
+            switch (choice) {
+                case 1:
+                    bookTicket();
+                    break;
+
+                case 2:
+                    viewAllTickets();
+                    break;
+
+                case 3:
+                    searchTicket();
+                    break;
+
+                case 4:
+                    cancelTicket();
+                    break;
+
+                case 5:
+                    displayAvailableSeats();
+                    break;
+
+                case 6:
+                    showTotalRevenue();
+                    break;
+
+                case 7:
+                    System.out.println(
+                        "Thank you for using Railway Reservation System!"
+                    );
+                    sc.close();
+                    return;
+
+                default:
+                    System.out.println(
+                        "Invalid choice. Please select from 1 to 7."
+                    );
+            }
+        }
+    }
+}
